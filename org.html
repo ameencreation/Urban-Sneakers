@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Urban Sneakers</title>
+<style>
+  /* --- GLOBAL STYLES --- */
+  body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(to bottom, #07A3B2, #D9ECC7);
+    color: #333;
+    min-height: 100vh;
+  }
+
+  h1, h3 {
+    margin: 0;
+  }
+
+  /* --- LOADER (Updated Circle Animation) --- */
+  .loader {
+    width: 40px;
+    aspect-ratio: 1;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .loader::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    --c: #0000, #f03355 1deg 120deg, #0000 121deg;
+    background:
+      conic-gradient(from 0deg, var(--c)) top right,
+      conic-gradient(from 120deg, var(--c)) bottom,
+      conic-gradient(from 240deg, var(--c)) top left;
+    background-size: 40px 40px;
+    background-repeat: no-repeat;
+    animation: l25 2s infinite cubic-bezier(0.3, 1, 0, 1);
+  }
+  @keyframes l25 {
+    33%  { inset: -8px; transform: rotate(0deg); }
+    66%  { inset: -8px; transform: rotate(180deg); }
+    100% { inset: 0;    transform: rotate(180deg); }
+  }
+
+  /* --- HEADER --- */
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 25px;
+    background: #111;
+    color: white;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .menu-icon { cursor: pointer; width: 25px; }
+  .menu-icon div {
+    height: 3px;
+    background: white;
+    margin: 5px 0;
+    border-radius: 2px;
+  }
+
+  /* --- ORDER WINDOW --- */
+  .order-window {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    color: white;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    font-size: 1.5em;
+    animation: fadeIn 0.6s ease forwards;
+    z-index: 200;
+    text-align: center;
+    padding: 20px;
+  }
+  .order-window .close-btn {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 1.5em;
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: white;
+  }
+  @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
+
+  .order-window button {
+    margin-top: 20px;
+    background: #25D366;
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    font-size: 1em;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  .order-window button:hover { background: #1ebe57; }
+
+  /* --- CART WINDOW --- */
+  .cart-window {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    background: white;
+    color: #111;
+    width: 90%;
+    max-width: 500px;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 30px rgba(0,0,0,0.4);
+    z-index: 300;
+    animation: popIn 0.4s ease forwards;
+  }
+  @keyframes popIn { to {transform: translate(-50%, -50%) scale(1);} }
+
+  .cart-window h2 { text-align: center; margin-bottom: 15px; }
+  .cart-items { max-height: 250px; overflow-y: auto; margin-bottom: 15px; }
+  .cart-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 0; border-bottom: 1px solid #ddd; font-size: 0.95em;
+  }
+  .remove-btn { background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 1.1em; }
+  .cart-total { font-weight: bold; text-align: right; margin-top: 10px; }
+  .close-cart, .checkout-btn {
+    padding: 8px 15px; border-radius: 5px; border: none; cursor: pointer;
+  }
+  .close-cart { background: #111; color: white; }
+  .checkout-btn { background: #27ae60; color: white; }
+
+  /* --- SHOE GRID --- */
+  .shoe-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 20px;
+    padding: 30px;
+  }
+  .shoe-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    overflow: hidden;
+    transition: transform 0.3s;
+  }
+  .shoe-card:hover { transform: translateY(-5px); }
+  .shoe-card img { width: 100%; height: 200px; object-fit: cover; }
+  .shoe-card .content { padding: 15px; text-align: center; }
+  .shoe-card select, .shoe-card input {
+    margin-top: 8px; padding: 5px; border-radius: 5px; border: 1px solid #ccc;
+  }
+  .shoe-card button {
+    margin-top: 10px;
+    background: #111;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .shoe-card button:hover { background: #444; }
+
+  footer {
+    text-align: center;
+    padding: 15px;
+    background: #111;
+    color: white;
+    margin-top: 30px;
+    font-size: 0.9em;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="menu-icon" onclick="toggleMenu()">
+    <div></div><div></div><div></div>
+  </div>
+  <h2 style="font-family: 'Montserrat', sans-serif; letter-spacing: 1px;">URBAN SNEAAKERS</h2>
+  <div style="cursor:pointer;" onclick="openCart()">🛒</div>
+</header>
+
+<!-- Order Overlay -->
+<div class="order-window" id="orderWindow">
+  <button class="close-btn" onclick="toggleMenu()">✖️</button>
+  <div>Order your favorite sneakers now!</div>
+  <button onclick="redirectToOrder()">💬 Chat on WhatsApp</button>
+</div>
+
+<!-- Cart Window -->
+<div class="cart-window" id="cartWindow">
+  <h2>Your Cart</h2>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-total" id="cartTotal">Total: $0</div>
+  <div style="margin-top:15px; display:flex; justify-content: space-between;">
+    <button class="close-cart" onclick="closeCart()">Close</button>
+    <button class="checkout-btn" onclick="checkout()">Checkout</button>
+  </div>
+</div>
+
+<!-- Loader -->
+<div class="loader"></div>
+
+<!-- Shoe Grid -->
+<div class="shoe-grid" id="shoeGrid"></div>
+
+<footer style="font-family: 'Andes' sans-serif; letter-spacing: 3px;" >©2025 AMEEN | CREATION®</footer>
+
+<script>
+const grid = document.getElementById('shoeGrid');
+const loader = document.querySelector('.loader');
+const cartWindow = document.getElementById('cartWindow');
+const cartItemsContainer = document.getElementById('cartItems');
+const cartTotal = document.getElementById('cartTotal');
+let cart = [];
+
+// 30 Sneaker Image URLs
+const images = [
+  "https://images.unsplash.com/photo-1542291026-7eec264c27ff",
+  "https://images.unsplash.com/photo-1528701800489-20beeb0d4a2d",
+  "https://images.unsplash.com/photo-1589187155473-3b9c5f6a95a2",
+  "https://images.unsplash.com/photo-1606813902914-1c9e22cc5b36",
+  "https://images.unsplash.com/photo-1616469829939-6b95d77f7b83",
+  "https://images.unsplash.com/photo-1627628613827-83c7187e2b7a",
+  "https://images.unsplash.com/photo-1600181952629-8b5bdbd8e4bc",
+  "https://images.unsplash.com/photo-1620812098501-5e9b7b2a69cb",
+  "https://images.unsplash.com/photo-1606811826507-7fd6f6811bb8",
+  "https://images.unsplash.com/photo-1606811794781-fc41a9df4c52",
+  "https://images.unsplash.com/photo-1617137968429-85924b4e3d0b",
+  "https://images.unsplash.com/photo-1628183990093-2dd4026d0e6c",
+  "https://images.unsplash.com/photo-1628797453851-0b1fc1e4d55c",
+  "https://images.unsplash.com/photo-1600180758890-b9cf4df07c4c",
+  "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3f",
+  "https://images.unsplash.com/photo-1629458427222-8c78e54da704",
+  "https://images.unsplash.com/photo-1618354691655-2cddc69b35a8",
+  "https://images.unsplash.com/photo-1595951239653-8fda2ff7e5e3",
+  "https://images.unsplash.com/photo-1600180759252-1b7ec8a9eaa9",
+  "https://images.unsplash.com/photo-1630344030169-3e94f98a8f59",
+  "https://images.unsplash.com/photo-1600181952471-4cfb6ef8b8b7",
+  "https://images.unsplash.com/photo-1617137968864-30a3d612ae60",
+  "https://images.unsplash.com/photo-1624571361258-f7ac59c1d70e",
+  "https://images.unsplash.com/photo-1606811826507-7fd6f6811bb8",
+  "https://images.unsplash.com/photo-1620338116817-6b9966e0f0da",
+  "https://images.unsplash.com/photo-1618354691655-2cddc69b35a8",
+  "https://images.unsplash.com/photo-1628183990093-2dd4026d0e6c",
+  "https://images.unsplash.com/photo-1595951239653-8fda2ff7e5e3",
+  "https://images.unsplash.com/photo-1630344030169-3e94f98a8f59",
+  "https://images.unsplash.com/photo-1606811794781-fc41a9df4c52"
+];
+
+// Load products
+setTimeout(() => {
+  loader.style.display = 'none';
+  images.forEach((img, i) => {
+    const price = Math.floor(Math.random() * 100) + 50;
+    const card = document.createElement('div');
+    card.className = 'shoe-card';
+    card.innerHTML = `
+      <img src="${img}?auto=format&fit=crop&w=400&q=80" alt="Sneaker ${i+1}">
+      <div class="content">
+        <h3>Sneaker ${i+1}</h3>
+        <p>$${price}</p>
+        <select id="size-${i}">
+          <option value="6">Size 6</option>
+          <option value="7">Size 7</option>
+          <option value="8">Size 8</option>
+          <option value="9">Size 9</option>
+          <option value="10">Size 10</option>
+          <option value="40">Size 40</option>
+          <option value="42">Size 42</option>
+          <option value="44">Size 44</option>
+          <option value="46">Size 46</option>
+          <option value="48">Size 48</option>
+        </select>
+        <input type="number" id="qty-${i}" min="1" value="1" style="width:60px;">
+        <button onclick="addToCart('Sneaker ${i+1}', ${price}, document.getElementById('size-${i}').value, document.getElementById('qty-${i}').value)">Add to Cart</button>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}, 1500);
+
+function toggleMenu() {
+  const win = document.getElementById('orderWindow');
+  win.style.display = (win.style.display === 'flex') ? 'none' : 'flex';
+}
+function redirectToOrder() {
+  window.location.href = "https://wa.me/95944863501";
+}
+function addToCart(name, price, size, qty) {
+  qty = parseInt(qty);
+  if (qty <= 0) return;
+  cart.push({id: Date.now(), name, price, size, qty});
+  alert(`${name} added to cart!`);
+  updateCart();
+}
+function removeFromCart(id) {
+  cart = cart.filter(item => item.id !== id);
+  updateCart();
+}
+function updateCart() {
+  cartItemsContainer.innerHTML = '';
+  let total = 0;
+  cart.forEach(item => {
+    total += item.price * item.qty;
+    const div = document.createElement('div');
+    div.className = 'cart-item';
+    div.innerHTML = `
+      <span>${item.name} (Size ${item.size}) x${item.qty}</span>
+      <span>$${item.price * item.qty} <button class="remove-btn" onclick="removeFromCart(${item.id})">🗑️</button></span>
+    `;
+    cartItemsContainer.appendChild(div);
+  });
+  cartTotal.textContent = `Total: $${total}`;
+}
+function openCart() { cartWindow.style.display = 'block'; }
+function closeCart() { cartWindow.style.display = 'none'; }
+function checkout() {
+  if (cart.length === 0) { alert('Your cart is empty!'); return; }
+  let message = '🛒 *Order Details:*\n';
+  cart.forEach(item => { message += `${item.name} (Size ${item.size}) x${item.qty} - $${item.price * item.qty}\n`; });
+  const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+  message += `\nTotal: $${total}`;
+  const encoded = encodeURIComponent(message);
+  window.location.href = `https://wa.me/95944863501?text=${encoded}`;
+}
+</script>
+
+</body>
+</html>essage);
+  window.location.href = `https://wa.me/95944863501?text=${encoded}`;
+}
+</script>
+
+</body>
+</html>
